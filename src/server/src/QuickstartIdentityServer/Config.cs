@@ -45,7 +45,7 @@ namespace QuickstartIdentityServer
                 {
                     ClientId = "angularapp",
                     ClientName = "Angular Client",
-                    AccessTokenType = AccessTokenType.Reference,
+                    
                     //AccessTokenLifetime = 600, // 10 minutes, default 60 minutes
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
@@ -66,6 +66,20 @@ namespace QuickstartIdentityServer
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
+                        "portalapi"
+                    }
+                },
+                new Client
+                {
+                    ClientId = "swaggerui",
+                    ClientName = "Swagger UI",
+                    AllowedGrantTypes = GrantTypes.Implicit,
+                    AllowAccessTokensViaBrowser = true,
+                    RequireConsent = false,
+                    RedirectUris = { "http://localhost:5001/swagger/o2c.html" },
+                    PostLogoutRedirectUris = { "http://localhost:5001/swagger/" },
+                    AllowedScopes =
+                    {
                         "portalapi"
                     }
                 }

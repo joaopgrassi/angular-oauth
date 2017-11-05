@@ -1,9 +1,11 @@
-﻿using IdentityServer4.AccessTokenValidation;
+﻿using System.Collections.Generic;
+using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace PortalAPI
 {
@@ -26,19 +28,33 @@ namespace PortalAPI
                         .AllowAnyMethod()
                         .AllowAnyHeader());
             });
+
             services.AddMvc();
+
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new Info { Title = "Portal API", Version = "v1" });
+                options.OperationFilter<AuthorizeCheckOperationFilter>();
+
+                options.AddSecurityDefinition("oauth2", new OAuth2Scheme
+                {
+                    Type = "oauth2",
+                    Flow = "implicit",
+                    AuthorizationUrl = "http://localhost:5000/connect/authorize",
+                    TokenUrl = "http://localhost:5000/connect/token",
+                    Scopes = new Dictionary<string, string>
+                    {
+                        { "portalapi", "Portal API" }
+                    }
+                });
+            });
 
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
-                    // base-address of your identityserver
                     options.Authority = "http://localhost:5000";
-
-                    // name of the API resource
                     options.ApiName = "portalapi";
-                    options.ApiSecret = "secret";
                     options.RequireHttpsMetadata = false;
-                    options.EnableCaching = true;
                 });
         }
 
@@ -52,6 +68,16 @@ namespace PortalAPI
 
             app.UseCors("CorsPolicy");
             app.UseAuthentication();
+
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Portal API");
+                c.ConfigureOAuth2("swaggerui", "", "", "Swagger UI");
+            });
+
             app.UseMvc();
         }
     }
